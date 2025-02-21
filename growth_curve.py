@@ -1,8 +1,11 @@
 """
 Bacterial Growth Rate Analysis
-ls941@cam.ac.uk, 2024/01/05
+lin.su@qmul.ac.uk, 2025/02/21
 
-This script is designed to analyze bacterial growth from optical density (OD) measurements over time. It automatically detects the exponential growth phase within a given time range, calculates the growth rate and doubling time, and plots the growth curve with the exponential fit.
+This script is designed to analyze bacterial growth from optical density (OD) measurements over time. 
+It automatically detects the exponential growth phase within a given time range, calculates the growth rate 
+and doubling time, and plots the growth curve with the exponential fit. 
+An annotation of the growth rate is added to each figure.
 
 The input CSV file should have the following format:
 - The first column should contain time points.
@@ -40,9 +43,9 @@ def detect_exponential_phase(time, od_values, min_window_size=3, max_window_size
 
     return best_start, best_end, best_window_size, best_slope, best_r_squared
 
+data = pd.read_csv('datafile.csv')  # Ensure the data file is in the correct path/format
 
-data = pd.read_csv('your_data.csv')  # Make sure your data is in the correct format, such as, data = pd.read_csv('D:\\data.csv')
-
+# Plot the original ln(OD) data for all replicates
 plt.figure(figsize=(10, 6))
 for col in data.columns[1:]:
     plt.plot(data['time'], np.log(data[col]), label=col)  # Plotting ln(OD)
@@ -74,22 +77,25 @@ for col in data.columns[1:]:
     doubling_times.append(doubling_time)
     r_squared_values.append(r_squared)
 
-    # Plot the original ln(OD) values
+    # Plot the original ln(OD) values and the exponential fit
     plt.figure(figsize=(10, 6))
     plt.plot(data['time'], np.log(data[col]), 'o', label=f'Original ln(OD) - {col}')
-
-    # Calculate the fit line using the regression results
     fit_line = slope * time_exp + intercept
     plt.plot(time_exp, fit_line, 'r--', label=f'Exponential Fit (R² = {r_squared:.2f})')
     
     plt.xlabel('Time (days)')
     plt.ylabel('ln(OD)')
     plt.title(f'Exponential Growth Fit for {col} (Logarithmic Scale)')
+    
+    # Annotate the figure with the growth rate
+    plt.text(0.05, 0.95, f'Growth rate: {growth_rate:.4f} per day', 
+             transform=plt.gca().transAxes, fontsize=12, verticalalignment='top', 
+             bbox=dict(facecolor='white', alpha=0.5))
+    
     plt.legend()
     plt.show()
 
-    print(f"{col} - Growth rate: {growth_rate} per day, Doubling time: {doubling_time} days, R²: {r_squared:.2f}")
-
+    print(f"{col} - Growth rate: {growth_rate:.4f} per day, Doubling time: {doubling_time:.2f} days, R²: {r_squared:.2f}")
 
 mean_growth_rate = np.mean(growth_rates)
 sd_growth_rate = np.std(growth_rates, ddof=1)
@@ -99,6 +105,6 @@ mean_r_squared = np.mean(r_squared_values)
 sd_r_squared = np.std(r_squared_values, ddof=1)
 
 print("\nOverall Results:")
-print(f"Mean Growth Rate: {mean_growth_rate} per day, SD: {sd_growth_rate}")
-print(f"Mean Doubling Time: {mean_doubling_time} days, SD: {sd_doubling_time}")
+print(f"Mean Growth Rate: {mean_growth_rate:.4f} per day, SD: {sd_growth_rate:.4f}")
+print(f"Mean Doubling Time: {mean_doubling_time:.2f} days, SD: {sd_doubling_time:.2f}")
 print(f"Mean R²: {mean_r_squared:.2f}, SD: {sd_r_squared:.2f}")
